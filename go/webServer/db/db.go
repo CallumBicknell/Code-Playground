@@ -1,25 +1,38 @@
 package db
 
 import (
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/vsouza/go-gin-boilerplate/config"
+	"database/sql"
+	"fmt"
+	"os"
+
+	"github.com/CallumBicknell/go-webServer/config"
+	"github.com/jinzhu/gorm"
 )
 
-var db *dynamodb.DynamoDB
+var db *sql.DB
 
 func Init() {
-	c := config.GetConfig()
-	db = dynamodb.New(session.New(&aws.Config{
-		Region:      aws.String(c.GetString("db.region")),
-		Credentials: credentials.NewEnvCredentials(),
-		Endpoint:    aws.String(c.GetString("db.endpoint")),
-		DisableSSL:  aws.Bool(c.GetBool("db.disable_ssl")),
-	}))
+	config := config.GetConfig()
+	host := config.GetString("db.host")
+	port := config.GetInt("db.port")
+	user := config.GetString("db.username")
+	password := config.GetString("db.password")
+	dbname := config.GetString("db.name")
+
+	dbinfo := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	db, err := gorm.Open("postgres", dbinfo)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "db connection failed: %s", err.Error())
+		os.Exit(1)
+	}
+
+	db.LogMode(true)
+	defer db.Close()
+
+	// DropTables() // Only if developing otherwise have a backup!
+	// CreateTables()
 }
 
-func GetDB() *dynamodb.DynamoDB {
+func GetDB() *sql.DB {
 	return db
 }

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/vsouza/go-gin-boilerplate/config"
-	"github.com/vsouza/go-gin-boilerplate/server"
+	"github.com/CallumBicknell/go-webServer/config"
+	"github.com/CallumBicknell/go-webServer/db"
+	"github.com/CallumBicknell/go-webServer/server"
 )
 
 func main() {
@@ -16,7 +17,9 @@ func main() {
 		os.Exit(1)
 	}
 	flag.Parse()
+
 	config.Init(*environment)
-	// db.Init()
+
+	db.Init()
 	server.Init()
 }
